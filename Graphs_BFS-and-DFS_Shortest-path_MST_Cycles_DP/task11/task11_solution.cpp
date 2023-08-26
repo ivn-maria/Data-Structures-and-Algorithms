@@ -1,35 +1,26 @@
 #include <iostream>
 using namespace std;
 
-int n;
-int a[1001];
-long long dp[1001][10081];
+long long blue[5000001];
+long long yellow[5000001];
+long long violet[5000001];
 
 int main() {
+    int n;
     cin >> n;
-    for (int i = 0; i < n; i++)
-        cin >> a[i];
 
-    for (int i = 0; i <= n; i++)
-        dp[i][0] = 1;
+    blue[0] = 1;
+    yellow[0] = 0;
+    violet[0] = 1;
 
     for (int i = 1; i <= n; i++) {
-        for (int j = 0; j <= 10080; j++) {
-            dp[i][j] = dp[i-1][j];
-            if (j >= a[i-1]) {
-                dp[i][j] += dp[i-1][j-a[i-1]] % 1000000007;
-            }
-        }
+        blue[i] = (yellow[i - 1] + violet[i - 1]) % 1000000007;
+        if (i == 1) yellow[i] = 0;
+        else yellow[i] = (blue[i - 1]) % 1000000007;
+        violet[i] = (blue[i - 1] + yellow[i - 1]) % 1000000007;
     }
 
-    long long count = 0;
-    for (int i = 0; i <= 10080; i++)
-        count += dp[n][i];
+    cout << (blue[n] + violet[n]) % 1000000007 << endl;
 
-    cout << count % 1000000007 << endl;
     return 0;
 }
-
-
-
-
