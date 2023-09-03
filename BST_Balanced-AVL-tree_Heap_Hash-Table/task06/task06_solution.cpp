@@ -1,47 +1,44 @@
 #include <iostream>
-#include <map>
+#include <set>
 using namespace std;
 
-map<int, bool> pos;
-
-int countShips(int N, int A) {
-    int count = 0, k = 0;
-
-    for (int i = 0; i < N; ++i) {
-        if (k == A) {
-            count++;
-            k = 0;
-        } else if (pos[i]) k++;
-        else if (!pos[i]) k = 0;
-    }
-
-    if (k == A) count++;
-
-    return count;
-}
-
 int main() {
-    int N, K, A, Q;
-    cin >> N >> K >> A >> Q;
-    for (int i = 0; i < N; ++i)
-        pos.insert({i, true});
+    int n, k, a, q;
+    cin >> n >> k >> a >> q;
+    
+    set<int> shots;
+    shots.insert(0);
+    shots.insert(n + 1);
 
-    int x[Q];
-    for (int i = 0; i < Q; ++i)
-        cin >> x[i];
+    int ans = -1;
+    int maxShips = (n + 1) / (a + 1);
 
-    int ans = 0;
-    for (int i = 0; i < Q; ++i) {
-        pos[x[i] - 1] = false;
+    for (int i = 1; i <= q; i++) {
+        int idx;
+        cin >> idx;
 
-        if (countShips(N, A) < K) {
-            ans = i + 1;
+        auto firstLower = shots.lower_bound(idx);
+        firstLower--;
+        auto firstHigher = shots.upper_bound(idx);
+        
+        shots.insert(idx);
+
+        int countShips = maxShips;
+
+        countShips -= ((*firstHigher - *firstLower) / (a + 1));
+        countShips += ((idx - *firstLower) / (a + 1));
+        countShips += ((*firstHigher - idx) / (a + 1));
+
+        maxShips = countShips;
+
+        if (countShips < k) {
+            ans = i;
             break;
         }
+
     }
 
-    if (ans == 0) cout << "-1";
-    else cout << ans;
+    cout << ans;
 
     return 0;
 }
