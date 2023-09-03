@@ -1,54 +1,42 @@
 #include <iostream>
-#include <vector>
-#include <list>
+#include <climits>
+#include <unordered_map>
+#include <queue>
 #include <set>
 using namespace std;
 
-void BFS(vector<set<int>> &graph, int start, int end, int N, int predecessor[], int distance[]) {
-    list<int> queue;
-    bool visited[N];
-    for (int i = 0; i < N + 1; i++) {
+unordered_map<int, set<int>> graph;
+
+void BFS(int start, int N, int *dist) {
+    queue<int> q;
+    bool visited[N + 1];
+    
+    for (int i = 0; i <= N; ++i) {
         visited[i] = false;
-        distance[i] = 2147483647;
-        predecessor[i] = -1;
+        dist[i] = INT_MAX;
     }
 
     visited[start] = true;
-    distance[start] = 0;
-    queue.push_back(start);
-    while (!queue.empty()) {
-        int current = queue.front();
-        queue.pop_front();
+    dist[start] = 0;
+    q.push(start);
+    
+    int visitedCont = 1;
 
-        for (int i = 1; i < N + 1; ++i) {
-            if (i != start && !graph[current].count(i)) {
-                if (!visited[i]) {
-                    visited[i] = true;
-                    distance[i] = distance[current] + 1;
-                    predecessor[i] = current;
-                    queue.push_back(i);
+    while (!q.empty()) {
+        if (visitedCont == N) break;
 
-                    if (i == end) return;
-                }
+        int top = q.front();
+        q.pop();
+        
+        for (int i = 1; i <= N; ++i) {
+            if (!visited[i] && graph[top].find(i) == graph[top].end()) {
+                visited[i] = true;
+                dist[i] = min(dist[i], dist[top] + 1);
+                q.push(i);
+                visitedCont++;
             }
         }
     }
-}
-
-void printShortestDistance(vector<set<int>> &graph, int start, int end, int N) {
-    int predecessor[N], distance[N];
-    BFS(graph, start, end, N, predecessor, distance);
-
-    vector<int> path;
-    int copy = end;
-    path.push_back(copy);
-
-    while (predecessor[copy] != -1) {
-        path.push_back(predecessor[copy]);
-        copy = predecessor[copy];
-    }
-
-    cout << distance[end] << ' ';
 }
 
 int main() {
@@ -59,7 +47,6 @@ int main() {
         int N, M;
         cin >> N >> M;
 
-        vector<set<int>> graph(N + 1);
         for (int j = 0; j < M; ++j) {
             int from, to;
             cin >> from >> to;
@@ -70,9 +57,14 @@ int main() {
 
         int K;
         cin >> K;
+        int dist[N + 1];
+        BFS(K, N, dist);
+        
         for (int j = 1; j < N + 1; ++j)
-            if (j != K) printShortestDistance(graph, K, j, N);
+            if (j != K) cout << (dist[j] != INT_MAX ? dist[j] : -1) << " ";
         cout << '\n';
+        
+        graph.clear();
     }
 
     return 0;
