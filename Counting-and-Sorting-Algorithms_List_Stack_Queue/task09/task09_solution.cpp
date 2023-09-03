@@ -1,60 +1,56 @@
-#include <iostream>
+#include<iostream>
+#include<vector>
 using namespace std;
 
-bool check(int mid, const int array[], int n, int K)
-{
-    int count = 0;
-    int sum = 0;
-
-    for (int i = 0; i < n; i++) {
-        if (array[i] > mid)
-            return false;
-
-        sum += array[i];
-
-        if (sum > mid) {
-            count++;
-            sum = array[i];
-        }
-    }
-    count++;
-
-    if (count <= K)
-        return true;
-
-    return false;
-}
-
-int solve(int array[], int n, int K)
-{
-    int* max = max_element(array, array + n);
-    int start = *max;
-    int end = 0;
-
-    for (int i = 0; i < n; i++)
-        end += array[i];
-
-    int answer = 0;
-    while (start <= end) {
-        int mid = (start + end) / 2;
-
-        if (check(mid, array, n, K)) {
-            answer = mid;
-            end = mid - 1;
-        } else start = mid + 1;
-    }
-
-    return answer;
-}
-
-int main()
-{
+int main() {
     int n, t;
     cin >> n >> t;
 
-    int skills[n];
-    for (int i = 0; i < n; i++)
-        cin >> skills[i];
+    vector<int> skills;
+    long long sum = 0;
+    long long max = 0;
 
-    cout << solve(skills, n, t);
+    for (int i = 0; i < n; i++) {
+        int skill;
+        cin >> skill;
+        
+        sum += skill;
+        if (skill > max)
+            max = skill;
+        skills.push_back(skill);
+    }
+
+    long long best = max;
+    long long low = best, high = sum;
+    long long ans = 0;
+
+    while (low <= high) {
+        int count = 0;
+        sum = 0;
+        
+        for (int i = 0; i < n; i++) {
+            if (skills[i] + sum > best) {
+                count++;
+                sum = 0;
+            }
+            sum += skills[i];
+        }
+
+        if (sum != 0)
+            count++;
+
+        if (count > t)
+            low = best + 1;
+        else
+            high = best - 1;
+
+        if (count == t)
+            ans = best;
+
+        best = low + (high - low) / 2;
+    }
+
+    cout << ans;
+    
+    return 0;
 }
