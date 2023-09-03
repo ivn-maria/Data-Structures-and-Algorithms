@@ -1,79 +1,79 @@
 #include <iostream>
-#include <climits>
 #include <vector>
 #include <queue>
+#include <unordered_map>
+#include <unordered_set>
+#include <limits.h>
 using namespace std;
 
 const int MOD = 1000000007;
 
-struct Edge {
+struct Node {
     int to;
     int weight;
+
+    int operator>(const Node &other) const {
+        return this->weight > other.weight;
+    }
 };
 
-void dijkstra(vector<vector<Edge>> &graph, vector<long long> &distances, int startNode) {
-    distances = vector<long long>(graph.size(), LLONG_MAX);
-    distances[startNode] = 0;
+unordered_map<int, vector<Node>> graph;
 
-    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
-    pq.push({0, startNode});
+long long dijkstra(int start, int end, int N) {
+    vector<long long> distances(N, LLONG_MAX);
+    vector<long long> paths(N, 0);
+
+    distances[start] = 0;
+    paths[start] = 1;
+
+    priority_queue<Node, vector<Node>, greater<Node>> pq;
+    pq.push({start, 0});
 
     while (!pq.empty()) {
-        int current = pq.top().second;
-        long long distanceToCurrent = pq.top().first;
+        int current = pq.top().to;
+        long long distanceToCurrent = pq.top().weight;
         pq.pop();
 
-        for (auto const &edge : graph[current]) {
-            long long newDistance = distanceToCurrent + edge.weight;
-            if (newDistance < distances[edge.to]) {
-                distances[edge.to] = newDistance;
-                pq.push({newDistance, edge.to});
+        if (distanceToCurrent > distances[current]) {
+            continue;
+        }
+
+        for (const auto &edge: graph[current]) {
+            int next = edge.to;
+            long long distanceToNext = edge.weight;
+            int nextTime = distances[current] + distanceToNext;
+
+            if (distances[next] > nextTime) {
+                distances[next] = nextTime;
+                pq.push({next, nextTime});
+            }
+
+            if (distances[next] > distances[current]) {
+                paths[next] += paths[current];
+                paths[next] %= MOD;
             }
         }
     }
-}
 
-void findAllPaths(vector<vector<Edge>> &graph, int start, int end, vector<bool> &visited, vector<long long> &dist,
-            long long &counter,vector<long long> &path) {
-    visited[start] = true;
-
-    if (start == end) counter++;
-    else {
-        for (auto child : graph[start]) {
-            if (!visited[child.to] && dist[start] > dist[child.to]) {
-                path[child.to] = path[start];
-                findAllPaths(graph, child.to, end, visited , dist, counter,path);
-            }
-        }
-    }
-
-    visited[start] = false;
+    return paths[end];
 }
 
 int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+
     int V, E, start, end;
     cin >> V >> E >> start >> end;
 
-    vector<vector<Edge>> graph(V);
-
-    for (int i = 0; i < E; i++) {
+    for (int i = 0; i < E; ++i) {
         int from, to, weight;
         cin >> from >> to >> weight;
-
+        
         graph[from].push_back({to, weight});
         graph[to].push_back({from, weight});
     }
 
-    vector<long long> distances;
-    dijkstra(graph, distances, end);
-
-    long long counter = 0;
-    vector<bool> visited(graph.size(), false);
-    vector<long long> path(graph.size());
-    path[start] = 1;
-    findAllPaths(graph, start, end, visited, distances, counter,path);
-
-    cout << counter % MOD;
+    cout << dijkstra(end, start, V);
 
     return 0;
 }
